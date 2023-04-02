@@ -24,10 +24,6 @@ from tqdm import tqdm
 
 import gunicorn
 
-gunicorn.workers.config
-
-
-
 app= dash.Dash(__name__)
 server = app.server
 #_____________________________________
