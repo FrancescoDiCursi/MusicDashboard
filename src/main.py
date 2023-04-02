@@ -22,6 +22,10 @@ from dash.dependencies import Input, Output
 import flask
 from tqdm import tqdm
 
+import gunicorn
+
+gunicorn.workers.config
+
 
 
 app= dash.Dash(__name__)
