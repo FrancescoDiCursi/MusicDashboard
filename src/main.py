@@ -981,13 +981,13 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
                          children=[
                              html.Label("Positive", id="positive word label", style={"color": "white", "margin-left": "45%"}),
                              html.Img(id="w_positive_cloud", style={"width":"80%"} , src=""),
-                             html.Label("Negative", id="positive word label",style={"color": "white", "margin-left": "45%"}),
+                             html.Label("Negative", id="negative word label",style={"color": "white", "margin-left": "45%"}),
                              html.Img(id="w_negative_cloud", style={"width":"80%"} , src="")
                          ]),
                 html.Div(id="w_neutral_clouds_cont", className="subcont",
                          style={"width": "50%", "height": "100%", "padding": "5%", "dispaly":"flex", "flex-direction":"column"},
                          children=[
-                             html.Label("Neutral", id="positive word label",
+                             html.Label("Neutral", id="neutral word label",
                                         style={"color": "white","margin-left": "25%"}),
                              html.Img(id="w_neutral_cloud", style={"width": "80%"}, src="")
                          ]),
@@ -1001,13 +1001,13 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
                              children=[
                                  html.Label("Positive", id="positive sent label",style={"color": "white", "margin-left": "45%"}),
                                  html.Img(id="s_positive_cloud", style={"width": "80%"}, src=""),
-                                 html.Label("Negative", id="positive sent label",style={"color": "white", "margin-left": "45%"}),
+                                 html.Label("Negative", id="negative sent label",style={"color": "white", "margin-left": "45%"}),
                                  html.Img(id="s_negative_cloud", style={ "width": "80%"}, src="")
                              ]),
                     html.Div(id="s_neutral_clouds_cont", className="subcont",
                              style={"width": "50%", "height": "100%", "dispaly":"flex", "flex-direction":"column","padding": "5%"},
                              children=[
-                                 html.Label("Neutral", id="positive sent label",
+                                 html.Label("Neutral", id="neutral sent label",
                                             style={"color": "white","margin-left": "25%"}),
                                  html.Img(id="s_neutral_cloud", style={"width": "80%"}, src="")
                              ]),
