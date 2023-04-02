@@ -1260,4 +1260,4 @@ def generate_clouds(n_clicks, loading_val, band_names_f, genre_slctr_f, country_
 
 
 if __name__=="__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=False)
