@@ -1226,7 +1226,7 @@ def generate_clouds(n_clicks, loading_val, band_names_f, genre_slctr_f, country_
 
             {"width": "100%", "height": "100%"},
             {"width": "0%", "height": "auto"},
-            True,
+            False, #should be True
             False,
             loading_val
            ]
