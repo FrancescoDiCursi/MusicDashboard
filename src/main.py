@@ -3,6 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
 import os
 import datetime
 import numpy as np
@@ -24,6 +25,7 @@ from tqdm import tqdm
 
 import gunicorn
 
+
 app= dash.Dash(__name__)
 server = app.server
 #_____________________________________
@@ -39,7 +41,7 @@ df["song len"]=[int(x.split(":")[0])*60 + int(x.split(":")[1])\
 
 df["count"]=[1 for x in df["song len"]]
 
-filtered_data=[]
+filtered_df=df #modfy on demand
 
 
 
@@ -806,15 +808,15 @@ for x,i in enumerate(songs_lens):
 #_________________________________________________________________________________________________
 #LAYOUT
 
-app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"white", "font-family":"Arial"},children=[
+app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"white", "fontFamily":"Arial"},children=[
     html.H1("Music dashboard", style={"textAlign" : "center"}),
     html.Div(id="filters_metacont",
-             style={"top":"0", "position":"sticky", "z-index":"99999",
-                    "background-color": "rgba(255,255,255,0.8)", "color":"black", "text-align":"center",
+             style={"top":"0", "position":"sticky", "zIndex":"99999",
+                    "backgroundColor": "rgba(255,255,255,0.8)", "color":"black", "textAlign":"center",
                    }, children=[
 
     html.Button("Hide filters", id="filters_btn", n_clicks=0,
-                style={"width":"100%", "background-color":"rgba(0,122,204,1)","color":"white",
+                style={"width":"100%", "backgroundColor":"rgba(0,122,204,1)","color":"white",
                        "padding":"0.3%"}),
         html.Div(id="filters_cont", style={}, children=[ #style={"height":"0%", "display":"none"}
             html.Div(id="slctr_subcont1_labels",  style={"display":"flex", "flexDirection":"row"} ,children=[
@@ -889,49 +891,13 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
                                 tooltip={"placement": "bottom", "always_visible": False}
 
                                 ),
-
-        ]),
-
-
-    ]),
-
-    html.Button("Generate sentiment clouds", id="generate_clouds_btn",
-                style={"width":"75%", "margin-left":"10%",
-                       "background-color":"rgba(0,122,204,1)", "color":"white",
-                       "text-align":"center","padding":"0.3%"}, n_clicks=0 ),
-
-    dcc.Loading(
-        id="loading-input_gencloud", style={"z-index":"11000"},
-        children=[html.Span([html.Span(id="loading-output_gencloud",
-                                       style={"position": "relative", "width": "50%", "height": "50%",
-                                              "background-color": "transparent", "color": "transparent",
-                                              "z-index": "100000",
-
-                                              }
-
-                                       )])],
-        type="default",
-    ),
-    html.Div(id="graphs_metacont", style={"display":"flex", "flexDirection": "row", "width":"100%","height":"100%", "background-color":"rgb(17, 17, 17)"}, children=[
-
-        html.Div(id="general_graphs_cont", className="subcont", style={"width":"100%", "height":"auto",
-                                                                       "display":"flex", "flex-direction":"column","align-content":"flex-end"}, children=[
-
-           html.Div(id="upper_general_cont",style={"width":"100%","height":"100%"}, children=[
-               html.Div(id="map_cont", style={"width":"100%","height":"100%"},children=[
-                    dcc.Graph(id="chor_g",figure={})
-               ]),
-           ]),
-
-            html.Button("Show marginal distributions", id="marginal_btn", n_clicks=0,
-                        style={"width": "75%", "margin-left": "10%", "background-color":"rgba(0,122,204,1)", "color":"white",
-                               "text-align":"center", "padding":"0.3%"}
-                        ),
-            dcc.Loading(
-                id="loading-input_marginal", style={"z-index":"11000"},
-                children=[html.Span([html.Span(id="loading-output_marginal",
+                html.Button("Start",id="start_btn", n_clicks=0,
+                            style={"visibility":"visible", "backgroundColor":"rgba(255,0,0,0.7)", "color":"white", "fontSize":"20px"} ),
+                dcc.Loading(
+                id="loading-input_start", style={"zIndex":"11000"},
+                children=[html.Span([html.Span(id="loading-output_start",
                                                style={"position": "relative", "width": "50%", "height": "50%",
-                                                      "background-color": "transparent", "color": "transparent",
+                                                      "backgroundColor": "transparent", "color": "transparent",
 
 
                                                       }
@@ -940,7 +906,57 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
                 type="default",
             ),
 
-            html.Div(id="lower_general_cont", style={"display":"flex", "flexDirection":"row","width":"100%","height":"100%","float":"bottom", "align-content":"flex-end"}, children=[
+        ]),
+
+    ])
+    ,
+
+    html.Button("Generate sentiment clouds", id="generate_clouds_btn",
+                style={"width":"75%", "marginLeft":"10%",
+                       "backgroundColor":"rgba(0,122,204,1)", "color":"white",
+                       "textAlign":"center","padding":"0.3%"}, n_clicks=0 ),
+
+    dcc.Loading(
+        id="loading-input_gencloud", style={"zIndex":"11000"},
+        children=[html.Span([html.Span(id="loading-output_gencloud",
+                                       style={"position": "relative", "width": "50%", "height": "50%",
+                                              "backgroundColor": "transparent", "color": "transparent",
+                                              "zIndex": "100000",
+
+                                              }
+
+                                       )])],
+        type="default",
+    ),
+    html.Div(id="graphs_metacont", style={"display":"flex", "flexDirection": "row", "width":"100%","height":"100%", "backgroundColor":"rgb(17, 17, 17)"}, children=[
+
+        html.Div(id="general_graphs_cont", className="subcont", style={"width":"100%", "height":"auto",
+                                                                       "display":"flex", "flexDirection":"column","alignContent":"flex-end"}, children=[
+
+           html.Div(id="upper_general_cont",style={"width":"100%","height":"100%"}, children=[
+               html.Div(id="map_cont", style={"width":"100%","height":"100%"},children=[
+                    dcc.Graph(id="chor_g",figure={})
+               ]),
+           ]),
+
+            html.Button("Show marginal distributions", id="marginal_btn", n_clicks=0,
+                        style={"width": "75%", "marginLeft": "10%", "backgroundColor":"rgba(0,122,204,1)", "color":"white",
+                               "textAlign":"center", "padding":"0.3%"}
+                        ),
+            dcc.Loading(
+                id="loading-input_marginal", style={"zIndex":"11000"},
+                children=[html.Span([html.Span(id="loading-output_marginal",
+                                               style={"position": "relative", "width": "50%", "height": "50%",
+                                                      "backgroundColor": "transparent", "color": "transparent",
+
+
+                                                      }
+
+                                               )])],
+                type="default",
+            ),
+
+            html.Div(id="lower_general_cont", style={"display":"flex", "flexDirection":"row","width":"100%","height":"100%","float":"bottom", "alignContent":"flex-end"}, children=[
 
                 html.Div(id="gnatt_cont", style={"width":"50%"}, children=[
                     html.Div(id="marginal_x_cont", hidden=True, children=[
@@ -950,10 +966,10 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
                     dcc.Graph(id="gnatt_g", figure={}),
                 ]),
                 dcc.Loading(
-                    id="loading-input_metacont", style={"z-index":"11000"},
+                    id="loading-input_metacont", style={"zIndex":"11000"},
                     children=[html.Div(style={"position":"absolute"}, children=[html.Div(id="loading-output_metacont",
                                                  style={"position": "relative",
-                                                        "background-color": "transparent", "color": "transparent",
+                                                        "backgroundColor": "transparent", "color": "transparent",
 
 
                                                         }
@@ -975,40 +991,40 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
 
         html.Div(id="clouds_cont", className="subcont", hidden=True, style={ "width":"0%","height":"0%",
                                                                "padding":"2%"}, children=[
-            html.Label("Words", id="word label", style={"color": "white", "margin-left": "45%"}),
-            html.Div(id="w_clouds_cont", className="subcont", style={"display": "flex", "flex-direction":"row", "height":"50%", "width":"100%"}, children=[
-                html.Div(id="w_posneg_clouds_cont", className="subcont", style={"display": "flex", "flex-direction": "column","width": "50%", "height": "50%","padding": "5%"},
+            html.Label("Words", id="word label", style={"color": "white", "marginLeft": "45%"}),
+            html.Div(id="w_clouds_cont", className="subcont", style={"display": "flex", "flexDirection":"row", "height":"50%", "width":"100%"}, children=[
+                html.Div(id="w_posneg_clouds_cont", className="subcont", style={"display": "flex", "flexDirection": "column","width": "50%", "height": "50%","padding": "5%"},
                          children=[
-                             html.Label("Positive", id="positive word label", style={"color": "white", "margin-left": "45%"}),
+                             html.Label("Positive", id="positive word label", style={"color": "white", "marginLeft": "45%"}),
                              html.Img(id="w_positive_cloud", style={"width":"80%"} , src=""),
-                             html.Label("Negative", id="negative word label",style={"color": "white", "margin-left": "45%"}),
+                             html.Label("Negative", id="negative word label",style={"color": "white", "marginLeft": "45%"}),
                              html.Img(id="w_negative_cloud", style={"width":"80%"} , src="")
                          ]),
                 html.Div(id="w_neutral_clouds_cont", className="subcont",
-                         style={"width": "50%", "height": "100%", "padding": "5%", "dispaly":"flex", "flex-direction":"column"},
+                         style={"width": "50%", "height": "100%", "padding": "5%", "dispaly":"flex", "flexDirection":"column"},
                          children=[
                              html.Label("Neutral", id="neutral word label",
-                                        style={"color": "white","margin-left": "25%"}),
+                                        style={"color": "white","marginLeft": "25%"}),
                              html.Img(id="w_neutral_cloud", style={"width": "80%"}, src="")
                          ]),
             ]),
 
-            html.Label("Sentences", id="sent label", style={"color": "white", "margin-left": "45%"}),
+            html.Label("Sentences", id="sent label", style={"color": "white", "marginLeft": "45%"}),
             html.Div(id="s_clouds_cont", className="subcont",
-                     style={"display": "flex", "flex-direction": "row", "height": "50%", "width": "100%",  "float":"bottom"}, children=[
+                     style={"display": "flex", "flexDirection": "row", "height": "50%", "width": "100%",  "float":"bottom"}, children=[
                     html.Div(id="s_posneg_clouds_cont", className="subcont",
-                             style={"display": "flex", "flex-direction": "column","width": "50%", "height": "50%","padding": "5%" },
+                             style={"display": "flex", "flexDirection": "column","width": "50%", "height": "50%","padding": "5%" },
                              children=[
-                                 html.Label("Positive", id="positive sent label",style={"color": "white", "margin-left": "45%"}),
+                                 html.Label("Positive", id="positive sent label",style={"color": "white", "marginLeft": "45%"}),
                                  html.Img(id="s_positive_cloud", style={"width": "80%"}, src=""),
-                                 html.Label("Negative", id="negative sent label",style={"color": "white", "margin-left": "45%"}),
+                                 html.Label("Negative", id="negative sent label",style={"color": "white", "marginLeft": "45%"}),
                                  html.Img(id="s_negative_cloud", style={ "width": "80%"}, src="")
                              ]),
                     html.Div(id="s_neutral_clouds_cont", className="subcont",
-                             style={"width": "50%", "height": "100%", "dispaly":"flex", "flex-direction":"column","padding": "5%"},
+                             style={"width": "50%", "height": "100%", "dispaly":"flex", "flexDirection":"column","padding": "5%"},
                              children=[
                                  html.Label("Neutral", id="neutral sent label",
-                                            style={"color": "white","margin-left": "25%"}),
+                                            style={"color": "white","marginLeft": "25%"}),
                                  html.Img(id="s_neutral_cloud", style={"width": "80%"}, src="")
                              ]),
                 ]),
@@ -1023,6 +1039,92 @@ app.layout = html.Div(style={"background-color":"rgba(17,17,17,1)", "color":"whi
 
 #_______________________________________________________________________________________________________________
 #CALLBACKS
+
+"""
+#CLOUDS
+ Output(component_id="w_neutral_cloud", component_property="src"),
+  Output(component_id="w_positive_cloud", component_property="src"),
+  Output(component_id="w_negative_cloud", component_property="src"),
+  Output(component_id="s_neutral_cloud", component_property="src"),
+  Output(component_id="s_positive_cloud", component_property="src"),
+  Output(component_id="s_negative_cloud", component_property="src"),
+
+  Output(component_id="general_graphs_cont", component_property="style",allow_duplicate=True),
+  Output(component_id="clouds_cont", component_property="style", allow_duplicate=True),
+  Output(component_id="clouds_cont", component_property="hidden", allow_duplicate=True),
+  Output(component_id="generate_clouds_btn", component_property="disabled"),
+ Output(component_id="loading-output_gencloud", component_property="children")
+ """
+
+"""
+#CLOUDS
+#Input(component_id="generate_clouds_btn", component_property="n_clicks"),
+"""
+
+@app.callback([#MAP
+               Output(component_id="chor_g", component_property="figure"),
+               Output(component_id="general_graphs_cont", component_property="style"),
+               Output(component_id="clouds_cont", component_property="style"),
+               Output(component_id="clouds_cont", component_property="hidden"),
+               #GNATT
+               Output(component_id="loading-output_metacont", component_property="children"),
+               Output(component_id="gnatt_g", component_property="figure"),
+               #HEATS
+               Output(component_id="heats_g", component_property="figure"),
+               #MARGINAL
+               Output(component_id="marginal_x_cont", component_property="hidden"),
+               Output(component_id="marginal_y_cont", component_property="hidden"),
+               Output(component_id="gnatt_marginal_x", component_property="figure"),
+               Output(component_id="gnatt_marginal_y", component_property="figure"),
+               Output(component_id="marginal_btn", component_property="children"),
+               Output(component_id="marginal_btn", component_property="disabled",allow_duplicate=True),
+               Output(component_id="loading-output_marginal", component_property="children"),
+               #start_btn
+               Output(component_id="start_btn", component_property="style"),
+               Output(component_id="loading-output_start", component_property="children")
+
+],
+              [#filters
+               Input(component_id="band_name_slctr", component_property="value"),
+               Input(component_id="genre_slctr", component_property="value"),
+               Input(component_id="country_slctr", component_property="value"),
+               Input(component_id="album_title_slctr", component_property="value"),
+               Input(component_id="song_title_slctr", component_property="value"),
+               Input(component_id="song_lyric_slctr", component_property="value"),
+               Input(component_id="album_year_slctr", component_property="value"),
+               Input(component_id="activity_slctr", component_property="value"),
+               Input(component_id="song_len_slctr", component_property="value"),
+
+               #MAP
+               #GNATT
+               Input(component_id="graphs_metacont", component_property="id"),
+               #HEATS
+               #MARGINALS
+               Input(component_id="marginal_btn", component_property="n_clicks"),
+               Input(component_id="marginal_btn", component_property="id"),
+               #start button
+               Input(component_id="start_btn", component_property="n_clicks"),
+               Input(component_id="start_btn", component_property="id")
+
+               ],
+              prevent_initial_call=True)
+def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f, album_year_f,activity_f, song_len_f,
+                   loading_val_gnatt, n_click_marginals, loading_val_marginals, n_click_start, loading_start): #  n_click_clouds
+
+    global filtered_df
+    filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
+                            album_year_f,activity_f, song_len_f)
+
+    map_data= update_map(filtered_df)
+    gnatt_data= update_gnatt(filtered_df, loading_val_gnatt)
+    heats_data= update_heats(filtered_df)
+    marginals_data= update_marginals(filtered_df, n_click_marginals, loading_val_marginals)
+    start_btn_style={"visibility":"hidden",}
+    final_data=[*map_data, *gnatt_data, *heats_data, *marginals_data, start_btn_style, loading_start]
+    print(final_data)
+    return final_data
+
+
 @app.callback([Output(component_id="marginal_btn", component_property="disabled")],
               [Input(component_id="marginal_btn", component_property="n_clicks")],
               prevent_initial_call=True)
@@ -1031,6 +1133,7 @@ def update_marginal_btn_state(disabled):
 
 @app.callback(
     [Output(component_id="generate_clouds_btn", component_property="disabled", allow_duplicate=True),
+
      ],
     [Input(component_id="generate_clouds_btn", component_property="n_clicks")],
     prevent_initial_call=True,
@@ -1054,109 +1157,21 @@ def update_filters_visibility(n_clicks):
     else:
         return [False,{"height":"0%","transition":"2s"}, "Hide filters"]
 
-@app.callback(
-    [Output(component_id="chor_g", component_property="figure"),
-     Output(component_id="general_graphs_cont", component_property="style"),
-     Output(component_id="clouds_cont", component_property="style"),
-     Output(component_id="clouds_cont", component_property="hidden")
-     ],
-    [Input(component_id="band_name_slctr", component_property="value"),
-     Input(component_id="genre_slctr", component_property="value"),
-     Input(component_id="country_slctr", component_property="value"),
-     Input(component_id="album_title_slctr", component_property="value"),
-     Input(component_id="song_title_slctr", component_property="value"),
-     Input(component_id="song_lyric_slctr", component_property="value"),
-     Input(component_id="album_year_slctr", component_property="value"),
-     Input(component_id="activity_slctr", component_property="value"),
-    Input(component_id="song_len_slctr", component_property="value")
-
-     ],
-)
-def update_map(band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-               album_year_f, activity_f, song_len_f):
-    filtered_df=filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                            album_year_f,activity_f, song_len_f)
+def update_map(filtered_df):
     return [create_map(filtered_df),{"width":"100%", "height":"100%"},{"width":"0%", "height":"auto"},True]
 
-
-@app.callback(
-    [Output(component_id="loading-output_metacont", component_property="children"),
-     Output(component_id="gnatt_g", component_property="figure"),],
-    [ Input(component_id="graphs_metacont", component_property="id"),
-     Input(component_id="band_name_slctr", component_property="value"),
-     Input(component_id="genre_slctr", component_property="value"),
-     Input(component_id="country_slctr", component_property="value"),
-     Input(component_id="album_title_slctr", component_property="value"),
-     Input(component_id="song_title_slctr", component_property="value"),
-     Input(component_id="song_lyric_slctr", component_property="value"),
-    Input(component_id="album_year_slctr", component_property="value"),
-    Input(component_id="activity_slctr", component_property="value"),
-Input(component_id="song_len_slctr", component_property="value")
-
-     ]
-)
-def update_gnatt(loading_val,band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                 album_year_f,activity_f, song_len_f):
-    filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                              album_year_f, activity_f, song_len_f)
-
+def update_gnatt(filtered_df, loading_val):
     return [loading_val, create_gnatt(filtered_df)]
 
 
 
-
-@app.callback(
-    [Output(component_id="heats_g", component_property="figure")],
-    [Input(component_id="band_name_slctr", component_property="value"),
-     Input(component_id="genre_slctr", component_property="value"),
-    Input(component_id="country_slctr", component_property="value"),
-    Input(component_id="album_title_slctr", component_property="value"),
-     Input(component_id="song_title_slctr", component_property="value"),
-     Input(component_id="song_lyric_slctr", component_property="value"),
-    Input(component_id="album_year_slctr", component_property="value"),
-    Input(component_id="activity_slctr", component_property="value"),
-Input(component_id="song_len_slctr", component_property="value")
-
-
-     ]
-)
-def update_heats(band_names_f,genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                 album_year_f,activity_f, song_len_f):
-    filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                              album_year_f, activity_f, song_len_f)
+def update_heats(filtered_df):
     return [create_heats(filtered_df)]
 
-@app.callback([Output(component_id="marginal_x_cont", component_property="hidden"),
-               Output(component_id="marginal_y_cont", component_property="hidden"),
-               Output(component_id="gnatt_marginal_x", component_property="figure"),
-               Output(component_id="gnatt_marginal_y", component_property="figure"),
-               Output(component_id="marginal_btn", component_property="children"),
-               Output(component_id="marginal_btn", component_property="disabled",allow_duplicate=True),
-               Output(component_id="loading-output_marginal", component_property="children")
-               ],
-              [Input(component_id="marginal_btn", component_property="n_clicks"),
-               Input(component_id="marginal_btn", component_property="id"),
-                Input(component_id="band_name_slctr", component_property="value"),
-                Input(component_id="genre_slctr", component_property="value"),
-                Input(component_id="country_slctr", component_property="value"),
-                Input(component_id="album_title_slctr", component_property="value"),
-               Input(component_id="song_title_slctr", component_property="value"),
-               Input(component_id="song_lyric_slctr", component_property="value"),
-                Input(component_id="album_year_slctr", component_property="value"),
-                Input(component_id="activity_slctr", component_property="value"),
-Input(component_id="song_len_slctr", component_property="value")
-
-               ],
-
-              prevent_initial_call=True
-)
-def update_marginals(n_clicks, loading_val, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                     album_year_f, activity_f, song_len_f):
+def update_marginals(filtered_df, n_clicks, loading_val):
 
     if list(dash.callback_context.triggered_prop_ids.values())==["marginal_btn"]:
         if n_clicks%2!=0:
-            filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                                      album_year_f, activity_f, song_len_f)
             return[False, False, create_gnatt_marginal_x(filtered_df), create_gnatt_marginal_y(filtered_df), "Hide marginal distributions", False, loading_val]
         else:
             #filtered_df = filter_data(df[0:2], band_names_f, genre_slctr_f, country_f, album_title_f) #only one row, faster load and hide marginals
@@ -1170,7 +1185,6 @@ def update_marginals(n_clicks, loading_val, band_names_f, genre_slctr_f, country
                 go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers")), "Show marginal distributions" , False, loading_val]  #
 
 
-
 @app.callback(
     [Output(component_id="w_neutral_cloud", component_property="src"),
      Output(component_id="w_positive_cloud", component_property="src"),
@@ -1178,13 +1192,11 @@ def update_marginals(n_clicks, loading_val, band_names_f, genre_slctr_f, country
      Output(component_id="s_neutral_cloud", component_property="src"),
      Output(component_id="s_positive_cloud", component_property="src"),
      Output(component_id="s_negative_cloud", component_property="src"),
-
      Output(component_id="general_graphs_cont", component_property="style",allow_duplicate=True),
      Output(component_id="clouds_cont", component_property="style", allow_duplicate=True),
      Output(component_id="clouds_cont", component_property="hidden", allow_duplicate=True),
      Output(component_id="generate_clouds_btn", component_property="disabled"),
      Output(component_id="loading-output_gencloud", component_property="children")
-
      ],
     [Input(component_id="generate_clouds_btn", component_property="n_clicks"),
      Input(component_id="generate_clouds_btn", component_property="id"),
@@ -1197,14 +1209,12 @@ def update_marginals(n_clicks, loading_val, band_names_f, genre_slctr_f, country
     Input(component_id="album_year_slctr", component_property="value"),
     Input(component_id="activity_slctr", component_property="value"),
 Input(component_id="song_len_slctr", component_property="value")
-
      ],
     prevent_initial_call=True,
 )
 def generate_clouds(n_clicks, loading_val, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
                     album_year_f, activity_f, song_len_f):
-    filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                              album_year_f, activity_f, song_len_f)
+    global filtered_df
     if list(dash.callback_context.triggered_prop_ids.values())!=["generate_clouds_btn"] or filtered_df.empty:
         print("CLOUD PREVENTED")
         return [Image.new("RGB", (800, 1280), (255, 255, 255)),
@@ -1250,7 +1260,7 @@ def generate_clouds(n_clicks, loading_val, band_names_f, genre_slctr_f, country_
            {"width":"60%", "height":"100%"},
            {"width":"40%", "height":"auto"},
            False,
-           True, #True if want to block button AFTER clouds on screen
+           False, #True if you want to block button AFTER clouds on screen
            loading_val
            ]
 
@@ -1258,6 +1268,5 @@ def generate_clouds(n_clicks, loading_val, band_names_f, genre_slctr_f, country_
 
 
 
-
 if __name__=="__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)
