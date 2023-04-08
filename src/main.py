@@ -893,7 +893,7 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                                 tooltip={"placement": "bottom", "always_visible": False}
 
                                 ),
-                html.Button("Start",id="start_btn", n_clicks=0,
+                html.Button("Apply",id="start_btn", n_clicks=0,
                             style={"visibility":"visible", "backgroundColor":"rgba(255,0,0,0.7)", "color":"white", "fontSize":"20px"} ),
                 dcc.Loading(
                 id="loading-input_start", style={"zIndex":"11000"},
@@ -1063,7 +1063,47 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
 #Input(component_id="generate_clouds_btn", component_property="n_clicks"),
 """
 
-@app.callback([#MAP
+@app.callback([
+
+               #start_btn
+               Output(component_id="start_btn", component_property="style"),
+               #Output(component_id="loading-output_start", component_property="children")
+               #Output(component_id="", component_property="")
+
+
+
+
+],
+              [#filters
+               Input(component_id="band_name_slctr", component_property="value"),
+               Input(component_id="genre_slctr", component_property="value"),
+               Input(component_id="country_slctr", component_property="value"),
+               Input(component_id="album_title_slctr", component_property="value"),
+               Input(component_id="song_title_slctr", component_property="value"),
+               Input(component_id="song_lyric_slctr", component_property="value"),
+               Input(component_id="album_year_slctr", component_property="value"),
+               Input(component_id="activity_slctr", component_property="value"),
+               Input(component_id="song_len_slctr", component_property="value"),
+               #Input(component_id="loading-output_start", component_property="children"),
+
+               #MAP
+               #GNATT
+
+               #HEATS
+
+               ],
+              prevent_initial_call=True)
+def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f, album_year_f,activity_f, song_len_f,
+                   ): #  n_click_clouds
+
+    global filtered_df
+    filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
+                            album_year_f,activity_f, song_len_f)
+    return [{"visibility":"visible", "backgroundColor":"rgba(255,0,0,0.7)", "color":"white", "fontSize":"20px"}] #dummy output
+
+
+@app.callback(
+    [#MAP
                Output(component_id="chor_g", component_property="figure"),
                Output(component_id="general_graphs_cont", component_property="style"),
                Output(component_id="clouds_cont", component_property="style"),
@@ -1081,55 +1121,31 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                 Output(component_id="marginal_btn", component_property="children", allow_duplicate=True),
                 Output(component_id="marginal_btn", component_property="disabled", allow_duplicate=True),
                 Output(component_id="loading-output_marginal", component_property="children", allow_duplicate=True),
-
-               #start_btn
-               Output(component_id="start_btn", component_property="style"),
-               Output(component_id="loading-output_start", component_property="children")
-
-
-
-],
-              [#filters
-               Input(component_id="band_name_slctr", component_property="value"),
-               Input(component_id="genre_slctr", component_property="value"),
-               Input(component_id="country_slctr", component_property="value"),
-               Input(component_id="album_title_slctr", component_property="value"),
-               Input(component_id="song_title_slctr", component_property="value"),
-               Input(component_id="song_lyric_slctr", component_property="value"),
-               Input(component_id="album_year_slctr", component_property="value"),
-               Input(component_id="activity_slctr", component_property="value"),
-               Input(component_id="song_len_slctr", component_property="value"),
-
-               #MAP
-               #GNATT
-               Input(component_id="graphs_metacont", component_property="id"),
-               #HEATS
-
-
-
-
-               #start button
-               Input(component_id="start_btn", component_property="n_clicks"),
-               Input(component_id="start_btn", component_property="id")
-
-               ],
-              prevent_initial_call=True)
-def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f, album_year_f,activity_f, song_len_f,
-                   loading_val_gnatt, n_click_start, loading_start): #  n_click_clouds
-
+                Output(component_id="start_btn", component_property="style", allow_duplicate=True),
+               Output(component_id="loading-output_start", component_property="children", allow_duplicate=True)
+    ],
+    [
+        Input(component_id="graphs_metacont", component_property="id"),
+        # start button
+        Input(component_id="start_btn", component_property="n_clicks"),
+        Input(component_id="start_btn", component_property="id"),
+        Input(component_id="gnatt_cont", component_property="id")
+    ],
+    prevent_initial_call=True
+)
+def draw_general_plots(metacont_loading_val,n_clicks_start, loading_start, loading_val_gnatt):
     global filtered_df
-    filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                            album_year_f,activity_f, song_len_f)
 
-    map_data= update_map(filtered_df)
-    gnatt_data= update_gnatt(filtered_df, loading_val_gnatt)
-    heats_data= update_heats(filtered_df)
-    marginals_data=  [True, True,
-                go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers")),
-                go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers")), "Show marginal distributions", False, ""]
-    #marginals_data= update_marginals( n_click_marginals, loading_val_marginals)
-    start_btn_style={"visibility":"hidden",}
-    final_data=[*map_data, *gnatt_data, *heats_data, *marginals_data, start_btn_style, loading_start]
+    map_data = update_map(filtered_df)
+    gnatt_data = update_gnatt(filtered_df, loading_val_gnatt)
+    heats_data = update_heats(filtered_df)
+    marginals_data = [True, True,
+                      go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers")),
+                      go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers")),
+                      "Show marginal distributions", False, ""]
+    # marginals_data= update_marginals( n_click_marginals, loading_val_marginals)
+    start_btn_style = {"visibility":"visible", "backgroundColor":"rgba(255,0,0,0.7)", "color":"white", "fontSize":"20px"}
+    final_data = [*map_data, *gnatt_data, *heats_data, *marginals_data, start_btn_style, loading_start]
     print(final_data)
     return final_data
 
