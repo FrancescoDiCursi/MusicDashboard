@@ -12,6 +12,7 @@ from textblob import TextBlob
 from wordcloud import WordCloud
 from PIL import Image, ImageDraw, ImageFont
 import nltk
+nltk.download("stopwords")
 from nltk.corpus import stopwords
 import re
 
@@ -581,15 +582,15 @@ def create_negative_sent_cloud(df,filtered_data):
 
 def create_word_cloud(text, cloud_orientation, text_type ):
     if cloud_orientation=="v":
-        #mask = np.array(Image.open('./imgs/cloud_v.png'))
-        pass
+        mask = np.array(Image.open('./imgs/cloud_v.png'))
+
     elif cloud_orientation=="h":
-        #mask = np.array(Image.open('./imgs/cloud.png'))
-        pass
+        mask = np.array(Image.open('./imgs/cloud.png'))
+
     if text_type=="words":
-        wc = WordCloud(background_color='rgba(0,0,0,0)',  mode="RGBA", width=1500, height=1500) # width=mask.shape[1], height=mask.shape[0], random_state=False, mask=mask
+        wc = WordCloud(background_color='rgba(0,0,0,0)',  mode="RGBA",width=mask.shape[1], height=mask.shape[0], random_state=False, mask=mask) #
     elif text_type=="sentences":
-        wc = WordCloud(background_color='rgba(0,0,0,0)',  mode="RGBA", width=1500, height=1500) # width=mask.shape[1], height=mask.shape[0], random_state=False, mask=mask,max_font_size=50, min_font_size=10
+        wc = WordCloud(background_color='rgba(0,0,0,0)',  mode="RGBA", width=mask.shape[1], height=mask.shape[0], random_state=False, mask=mask,max_font_size=50, min_font_size=10) #
 
     wc.fit_words(text)
     return wc.to_image()
