@@ -1227,28 +1227,27 @@ def generate_clouds(filtered_df, callback, n_clicks, loading_val):
     filtered_data=process_text(filtered_df,"all")
     print("finished process")
     img1=create_neutral_word_cloud(filtered_df,filtered_data)
-    img1.save("./temp imgs/neutral words cloud.png",dpi=(300, 300))
+    #img1.save("./temp imgs/neutral words cloud.png",dpi=(300, 300))
     img2=create_positive_word_cloud(filtered_df,filtered_data)
-    img2.save("./temp imgs/positive words cloud.png",dpi=(300, 300))
+    #img2.save("./temp imgs/positive words cloud.png",dpi=(300, 300))
     img3=create_negative_word_cloud(filtered_df,filtered_data)
-    img3.save("./temp imgs/negative words cloud.png",dpi=(300, 300))
+    #img3.save("./temp imgs/negative words cloud.png",dpi=(300, 300))
 
     img4=create_neutral_sent_cloud(filtered_df,filtered_data)
-    img4.save("./temp imgs/neutral sents cloud.png",dpi=(300, 300))
+    #img4.save("./temp imgs/neutral sents cloud.png",dpi=(300, 300))
     img5=create_positive_sent_cloud(filtered_df,filtered_data)
-    img5.save("./temp imgs/positive sents cloud.png",dpi=(300, 300))
+    #img5.save("./temp imgs/positive sents cloud.png",dpi=(300, 300))
     img6=create_negative_sent_cloud(filtered_df,filtered_data)
-    img6.save("./temp imgs/negative sents cloud.png",dpi=(300, 300))
+    #img6.save("./temp imgs/negative sents cloud.png",dpi=(300, 300))
 
 
 
-    is_busy=False
-    return[Image.open("./temp imgs/neutral words cloud.png"),
-           Image.open("./temp imgs/positive words cloud.png"),
-           Image.open("./temp imgs/negative words cloud.png"),
-           Image.open("./temp imgs/neutral sents cloud.png"),
-           Image.open("./temp imgs/positive sents cloud.png"),
-           Image.open("./temp imgs/negative sents cloud.png"),
+    return[img1,#Image.open("./temp imgs/neutral words cloud.png"),
+           img2,#Image.open("./temp imgs/positive words cloud.png"),
+           img3,#Image.open("./temp imgs/negative words cloud.png"),
+           img4,#Image.open("./temp imgs/neutral sents cloud.png"),
+           img5,#Image.open("./temp imgs/positive sents cloud.png"),
+           img6,#Image.open("./temp imgs/negative sents cloud.png"),
 
            {"width":"60%", "height":"100%"},
            {"width":"40%", "height":"auto"},
