@@ -1134,23 +1134,6 @@ def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_t
     return final_data
 
 
-@app.callback([Output(component_id="marginal_btn", component_property="disabled")],
-              [Input(component_id="marginal_btn", component_property="n_clicks")],
-              prevent_initial_call=True)
-def update_marginal_btn_state(disabled):
-    return [True]
-
-@app.callback(
-    [Output(component_id="generate_clouds_btn", component_property="disabled", allow_duplicate=True),
-
-     ],
-    [Input(component_id="generate_clouds_btn", component_property="n_clicks")],
-    prevent_initial_call=True,
-
-)
-def update_gen_cloud_btn_state(disabled):
-    return[True]
-
 
 @app.callback(
     [Output(component_id="filters_cont", component_property="hidden"),
