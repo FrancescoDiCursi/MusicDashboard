@@ -23,7 +23,6 @@ from dash.dependencies import Input, Output
 import flask
 from tqdm import tqdm
 
-import gunicorn
 
 
 app= dash.Dash(__name__)
@@ -1079,9 +1078,26 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                Output(component_id="marginal_btn", component_property="children"),
                Output(component_id="marginal_btn", component_property="disabled",allow_duplicate=True),
                Output(component_id="loading-output_marginal", component_property="children"),
+
+              #CLOUDS
+                Output(component_id="w_neutral_cloud", component_property="src"),
+                Output(component_id="w_positive_cloud", component_property="src"),
+                Output(component_id="w_negative_cloud", component_property="src"),
+                Output(component_id="s_neutral_cloud", component_property="src"),
+                Output(component_id="s_positive_cloud", component_property="src"),
+                Output(component_id="s_negative_cloud", component_property="src"),
+
+                Output(component_id="general_graphs_cont", component_property="style", allow_duplicate=True),
+                Output(component_id="clouds_cont", component_property="style", allow_duplicate=True),
+                Output(component_id="clouds_cont", component_property="hidden", allow_duplicate=True),
+                Output(component_id="generate_clouds_btn", component_property="disabled"),
+                Output(component_id="loading-output_gencloud", component_property="children"),
+
                #start_btn
                Output(component_id="start_btn", component_property="style"),
                Output(component_id="loading-output_start", component_property="children")
+
+
 
 ],
               [#filters
@@ -1102,6 +1118,9 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                #MARGINALS
                Input(component_id="marginal_btn", component_property="n_clicks"),
                Input(component_id="marginal_btn", component_property="id"),
+               #CLOUDS
+               Input(component_id="generate_clouds_btn", component_property="n_clicks"),
+                Input(component_id="generate_clouds_btn", component_property="id"),
                #start button
                Input(component_id="start_btn", component_property="n_clicks"),
                Input(component_id="start_btn", component_property="id")
@@ -1109,7 +1128,7 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                ],
               prevent_initial_call=True)
 def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f, album_year_f,activity_f, song_len_f,
-                   loading_val_gnatt, n_click_marginals, loading_val_marginals, n_click_start, loading_start): #  n_click_clouds
+                   loading_val_gnatt, n_click_marginals, loading_val_marginals, n_click_cloud , loading_cloud, n_click_start, loading_start): #  n_click_clouds
 
     global filtered_df
     filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
@@ -1119,8 +1138,10 @@ def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_t
     gnatt_data= update_gnatt(filtered_df, loading_val_gnatt)
     heats_data= update_heats(filtered_df)
     marginals_data= update_marginals(filtered_df, n_click_marginals, loading_val_marginals)
+    cloud_callback=list(dash.callback_context.triggered_prop_ids.values())
+    clouds_data= generate_clouds(filtered_df, cloud_callback,n_click_cloud,loading_cloud)
     start_btn_style={"visibility":"hidden",}
-    final_data=[*map_data, *gnatt_data, *heats_data, *marginals_data, start_btn_style, loading_start]
+    final_data=[*map_data, *gnatt_data, *heats_data, *marginals_data, *clouds_data, start_btn_style, loading_start]
     print(final_data)
     return final_data
 
@@ -1185,37 +1206,9 @@ def update_marginals(filtered_df, n_clicks, loading_val):
                 go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers")), "Show marginal distributions" , False, loading_val]  #
 
 
-@app.callback(
-    [Output(component_id="w_neutral_cloud", component_property="src"),
-     Output(component_id="w_positive_cloud", component_property="src"),
-     Output(component_id="w_negative_cloud", component_property="src"),
-     Output(component_id="s_neutral_cloud", component_property="src"),
-     Output(component_id="s_positive_cloud", component_property="src"),
-     Output(component_id="s_negative_cloud", component_property="src"),
-     Output(component_id="general_graphs_cont", component_property="style",allow_duplicate=True),
-     Output(component_id="clouds_cont", component_property="style", allow_duplicate=True),
-     Output(component_id="clouds_cont", component_property="hidden", allow_duplicate=True),
-     Output(component_id="generate_clouds_btn", component_property="disabled"),
-     Output(component_id="loading-output_gencloud", component_property="children")
-     ],
-    [Input(component_id="generate_clouds_btn", component_property="n_clicks"),
-     Input(component_id="generate_clouds_btn", component_property="id"),
-     Input(component_id="band_name_slctr", component_property="value"),
-    Input(component_id="genre_slctr", component_property="value"),
-    Input(component_id="country_slctr", component_property="value"),
-    Input(component_id="album_title_slctr", component_property="value"),
-     Input(component_id="song_title_slctr", component_property="value"),
-     Input(component_id="song_lyric_slctr", component_property="value"),
-    Input(component_id="album_year_slctr", component_property="value"),
-    Input(component_id="activity_slctr", component_property="value"),
-Input(component_id="song_len_slctr", component_property="value")
-     ],
-    prevent_initial_call=True,
-)
-def generate_clouds(n_clicks, loading_val, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
-                    album_year_f, activity_f, song_len_f):
-    global filtered_df
-    if list(dash.callback_context.triggered_prop_ids.values())!=["generate_clouds_btn"] or filtered_df.empty:
+
+def generate_clouds(filtered_df, callback, n_clicks, loading_val):
+    if callback!=["generate_clouds_btn"] or filtered_df.empty:
         print("CLOUD PREVENTED")
         return [Image.new("RGB", (800, 1280), (255, 255, 255)),
                 Image.new("RGB", (800, 1280), (255, 255, 255)),
