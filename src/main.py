@@ -249,7 +249,7 @@ def create_single_stats(df):
                                margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
 
     #possibly comment out fig_albumyear as it is already in marginal distributions
-    fig_albumyear= px.histogram(df[df["album year"]>0],"album year",
+    fig_albumyear= px.histogram(df[df["album year"]>1990],"album year",
                           log_y=True)
     fig_albumyear.update_layout( showlegend=False,
                                 margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
