@@ -214,6 +214,70 @@ def create_heats(df):
     fig_heats.update_layout(template="plotly_dark")
     return fig_heats
 
+def create_single_stats(df):
+    fig_bandname = px.pie(names=df["band name"].value_counts().index, values=df["band name"].value_counts().values,
+                 hole=0.5, labels={'band name': 'band name'})
+    fig_bandname.update_traces(textposition='inside', textinfo='percent+label')
+    fig_bandname.update_layout(title_text="band name", title_x=0.50, title_y=0.50, showlegend=False,
+                               margin=dict(l=10, r=10, t=10, b=10),template="plotly_dark")
+
+    fig_country = px.pie(names=df["country"].value_counts().index, values=df["country"].value_counts().values,
+                 hole=0.5, labels={'country': 'country'})
+    fig_country.update_traces(textposition='inside', textinfo='percent+label')
+    fig_country.update_layout(title_text="country", title_x=0.50, title_y=0.50, showlegend=False,
+                              margin=dict(l=10, r=10, t=10, b=10),template="plotly_dark")
+
+    genres_=pd.Series([y for x in df["genres"] for y in x.split(';')])
+    print(genres_.value_counts())
+
+    fig_genres = px.pie(names=genres_.value_counts().index, values=genres_.value_counts().values,
+                 hole=0.5, labels={'genre': 'genre'})
+    fig_genres.update_traces(textposition='inside', textinfo='percent+label')
+    fig_genres.update_layout(title_text="genres", title_x=0.50, title_y=0.50, showlegend=False,
+                             margin=dict(l=10, r=10, t=10, b=10),template="plotly_dark")
+
+    fig_albumtitle = px.pie(names=df["album title"].value_counts().index, values=df["album title"].value_counts().values,
+                          hole=0.5, labels={'album title': 'album title'})
+    fig_albumtitle.update_traces(textposition='inside', textinfo='percent+label')
+    fig_albumtitle.update_layout(title_text="album title", title_x=0.50, title_y=0.50, showlegend=False,
+                               margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+    fig_songtitle = px.pie(names=df["song title"].value_counts().index, values=df["song title"].value_counts().values,
+                          hole=0.5, labels={'song title': 'song title'})
+    fig_songtitle.update_traces(textposition='inside', textinfo='percent+label')
+    fig_songtitle.update_layout(title_text="song title", title_x=0.50, title_y=0.50, showlegend=False,
+                               margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+    #possibly comment out fig_albumyear as it is already in marginal distributions
+    fig_albumyear= px.histogram(df[df["album year"]>0],"album year",
+                          log_y=True)
+    fig_albumyear.update_layout( showlegend=False,
+                                margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+    fig_songlen= px.histogram(df, "song len", log_y=True)
+    fig_songlen.update_layout( showlegend=False,
+                                margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+    fig_albumtitlesent= px.histogram(df, "album title sentiment",range_x=[-1,1], log_y=True)
+    fig_albumtitlesent.update_layout( showlegend=False,
+                                margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+    fig_songtitlesent= px.histogram(df, "song title sentiment", range_x=[-1,1], log_y=True)
+    fig_songtitlesent.update_layout( showlegend=False,
+                                margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+    fig_lyricsent= px.histogram(df, "song lyric sentiment", range_x=[-1,1], log_y=True)
+    fig_lyricsent.update_layout( showlegend=False,
+                                margin=dict(l=10, r=10, t=10, b=10), template="plotly_dark")
+
+
+
+
+
+    return [fig_bandname, fig_country, fig_genres, fig_albumtitle, fig_songtitle, fig_albumyear, fig_songlen,
+            fig_albumtitlesent, fig_songtitlesent, fig_lyricsent]
+
+
 def create_map(df):
     country_to_iso3 = """ABW	Aruba	AW	533
     AFG	Afghanistan	AF	004
@@ -936,6 +1000,44 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                                                                        "display":"flex", "flexDirection":"column","alignContent":"flex-end"}, children=[
 
            html.Div(id="upper_general_cont",style={"width":"100%","height":"100%"}, children=[
+                html.Button("Show single counters", id="singlecounters_btn",
+                style={"width":"75%", "marginLeft":"10%",
+                       "backgroundColor":"rgba(0,122,204,1)", "color":"white",
+                       "textAlign":"center","padding":"0.3%"}, n_clicks=0 ),
+                dcc.Loading(
+                id="loading-input_donuts", style={"zIndex":"11000"},
+                children=[html.Span([html.Span(id="loading-output_donuts",
+                                               style={"position": "relative", "width": "50%", "height": "50%",
+                                                      "backgroundColor": "transparent", "color": "transparent",
+
+
+                                                      }
+
+                                               )])],
+                type="default",
+            ),
+               html.Div(id="donuts_cont", style={"width": "100%", "height":"50%", "display":"none" }, children=[
+                   html.Div(id="donuts_subcont1",style={"width": "100%", "height":"50%", "display":"flex", "flexDirection":"row"},
+                            children=[
+                        dcc.Graph(id="bandname_donut", figure={}, style={"width":"20%","height":"50vh"}),
+                       dcc.Graph(id="country_donut", figure={}, style={"width":"20%","height":"50vh"}),
+                       dcc.Graph(id="genres_donut", figure={}, style={"width":"20%","height":"50vh"}),
+                       dcc.Graph(id="albumtitle_donut", figure={}, style={"width":"20%","height":"50vh"}),
+                       dcc.Graph(id="songtitle_donut", figure={}, style={"width": "20%","height":"50vh"}),
+                   ]),
+
+                   html.Div(id="donuts_subcont2", style={"width": "100%", "height":"25%", "display":"flex", "flexDirection":"row"},
+                            children=[
+
+                       dcc.Graph(id="albumyear_hist", figure={}, style={"width":"20%","height":"25vh"}),
+                   dcc.Graph(id="songlen_hist", figure={}, style={"width": "20%","height":"25vh"}),
+                   dcc.Graph(id="albumtitlesent_hist", figure={}, style={"width": "20%","height":"25vh"}),
+                   dcc.Graph(id="songtitlesent_hist", figure={}, style={"width": "20%","height":"25vh"}),
+                   dcc.Graph(id="lyricsent_hist", figure={}, style={"width": "20%","height":"25vh"}),
+                ]),
+
+               ]),
+
                html.Div(id="map_cont", style={"width":"100%","height":"100%"},children=[
                     dcc.Graph(id="chor_g",figure={})
                ]),
@@ -1103,7 +1205,8 @@ def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_t
 
 
 @app.callback(
-    [#MAP
+            [
+             #MAP
                Output(component_id="chor_g", component_property="figure"),
                Output(component_id="general_graphs_cont", component_property="style"),
                Output(component_id="clouds_cont", component_property="style"),
@@ -1121,21 +1224,44 @@ def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_t
                 Output(component_id="marginal_btn", component_property="children", allow_duplicate=True),
                 Output(component_id="marginal_btn", component_property="disabled", allow_duplicate=True),
                 Output(component_id="loading-output_marginal", component_property="children", allow_duplicate=True),
+
+                Output(component_id="bandname_donut", component_property="figure"),
+                Output(component_id="country_donut", component_property="figure"),
+                Output(component_id="genres_donut", component_property="figure"),
+                Output(component_id="albumtitle_donut", component_property="figure"),
+                Output(component_id="songtitle_donut", component_property="figure"),
+                Output(component_id="albumyear_hist", component_property="figure"),
+                Output(component_id="songlen_hist", component_property="figure"),
+                Output(component_id="albumtitlesent_hist", component_property="figure"),
+                Output(component_id="songtitlesent_hist", component_property="figure"),
+                Output(component_id="lyricsent_hist", component_property="figure"),
+
+                Output(component_id="donuts_cont", component_property="style"),
+                Output(component_id="singlecounters_btn", component_property="children", allow_duplicate=True),
+                Output(component_id="loading-output_donuts", component_property="children", allow_duplicate=True),
+
+
                 Output(component_id="start_btn", component_property="style", allow_duplicate=True),
                Output(component_id="loading-output_start", component_property="children", allow_duplicate=True)
+
     ],
     [
         Input(component_id="graphs_metacont", component_property="id"),
         # start button
         Input(component_id="start_btn", component_property="n_clicks"),
         Input(component_id="start_btn", component_property="id"),
-        Input(component_id="gnatt_cont", component_property="id")
+        Input(component_id="gnatt_cont", component_property="id"),
+        Input(component_id="loading-input_donuts", component_property="children")
     ],
     prevent_initial_call=True
 )
-def draw_general_plots(metacont_loading_val,n_clicks_start, loading_start, loading_val_gnatt):
+def draw_general_plots(metacont_loading_val,n_clicks_start, loading_start, loading_val_gnatt, loading_val_donuts):
     global filtered_df
 
+    singleplots_data= [go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers"))]*10
+    singleplots_data.append({"width": "100%", "height":"50%", "display":"none"})
+    singleplots_data.append("Show single counters")
+    singleplots_data.append(loading_val_donuts)
     map_data = update_map(filtered_df)
     gnatt_data = update_gnatt(filtered_df, loading_val_gnatt)
     heats_data = update_heats(filtered_df)
@@ -1145,7 +1271,10 @@ def draw_general_plots(metacont_loading_val,n_clicks_start, loading_start, loadi
                       "Show marginal distributions", False, ""]
     # marginals_data= update_marginals( n_click_marginals, loading_val_marginals)
     start_btn_style = {"visibility":"visible", "backgroundColor":"rgba(255,0,0,0.7)", "color":"white", "fontSize":"20px"}
-    final_data = [*map_data, *gnatt_data, *heats_data, *marginals_data, start_btn_style, loading_start]
+    final_data = [
+                    *map_data, *gnatt_data, *heats_data, *marginals_data, *singleplots_data,
+                   start_btn_style, loading_start,
+                 ]
     print(final_data)
     return final_data
 
@@ -1173,9 +1302,46 @@ def update_gnatt(filtered_df, loading_val):
     return [loading_val, create_gnatt(filtered_df)]
 
 
-
 def update_heats(filtered_df):
     return [create_heats(filtered_df)]
+
+
+@app.callback(
+    [ Output(component_id="bandname_donut", component_property="figure", allow_duplicate=True),
+                Output(component_id="country_donut", component_property="figure", allow_duplicate=True),
+                Output(component_id="genres_donut", component_property="figure", allow_duplicate=True),
+                Output(component_id="albumtitle_donut", component_property="figure", allow_duplicate=True),
+                Output(component_id="songtitle_donut", component_property="figure", allow_duplicate=True),
+                Output(component_id="albumyear_hist", component_property="figure", allow_duplicate=True),
+                Output(component_id="songlen_hist", component_property="figure", allow_duplicate=True),
+                Output(component_id="albumtitlesent_hist", component_property="figure", allow_duplicate=True),
+                Output(component_id="songtitlesent_hist", component_property="figure", allow_duplicate=True),
+                Output(component_id="lyricsent_hist", component_property="figure", allow_duplicate=True),
+
+                Output(component_id="donuts_cont", component_property="style", allow_duplicate=True),
+                Output(component_id="singlecounters_btn", component_property="children", allow_duplicate=True),
+                Output(component_id="loading-output_donuts", component_property="children", allow_duplicate=True)
+
+    ],
+
+    [
+        Input(component_id="singlecounters_btn", component_property="n_clicks"),
+        Input(component_id="loading-input_donuts", component_property="children")
+
+    ],
+    prevent_initial_call=True
+)
+def update_single_counters(n_clicks, loading_val):
+    global filtered_df
+    singleplots_data= create_single_stats(filtered_df)
+    if n_clicks%2==0:
+        style_={"width": "100%", "height":"50%", "display":"none" }
+        text_="Show single counters"
+    elif n_clicks%2!=0:
+        style_={"width": "100%", "height":"50%", "display":"flex", "flexDirection":"column" }
+        text_="Hide single counters"
+
+    return [*singleplots_data, style_, text_, loading_val]
 
 @app.callback(
     [
