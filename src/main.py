@@ -78,10 +78,10 @@ def create_scatter_dfg_activity(df):
 
 
 def create_gnatt_marginal_x(df):
-    print("MARGINAL DF:  ", df)
+    #print("MARGINAL DF:  ", df)
     df_scatter_x = create_scatter_dfg_activity(df)
 
-    print("marginal x", df_scatter_x)
+    #print("marginal x", df_scatter_x)
     if df_scatter_x.empty:
         fig= go.Figure(go.Scatter(x=pd.Series(dtype=object), y=pd.Series(dtype=object), mode="markers"))
         fig.update_layout(template="plotly_dark")
@@ -561,85 +561,49 @@ def create_map(df):
     return fig_chor
 
 
-def process_text(df,type_):
+def process_text(df,type_): #original process_text moved to "Lyrics stats > scraping"; precomputed values to quicken the dashboard
     positive_words, negative_words, neutral_words , positive_sentences, negative_sentences, neutral_sentences = [],[],[],[],[],[]
 
-    stopwords_ = [x for x in stopwords.words("english")]
-    df_sentiment = df.copy().drop_duplicates(subset=["song lyric"], keep="first")
-    df_sentiment_lyrics = df_sentiment["song lyric"]
-    df_sentiment_lyrics_sents = [[y.strip() for y in str(x).split("\n")] for x in df_sentiment_lyrics if x != ""]
-    df_sentiment_lyrics_sents = [[y.lower() for y in x if y != ""] for x in df_sentiment_lyrics_sents]
+    neutral_sentences=pd.Series([y for x in df["neutral sents"] for y in str(x).split("###") if y!="nan"]).value_counts()
+    positive_sentences=pd.Series([y for x in df["positive sents"] for y in str(x).split("###") if y!="nan" ]).value_counts()
+    negative_sentences=pd.Series([y for x in df["negative sents"] for y in str(x).split("###") if y!="nan"]).value_counts()
 
-    df_sentiment_lyrics_words = [[re.sub("\W", " ", y).split(" ") for y in x] for x in df_sentiment_lyrics_sents]
-    df_sentiment_lyrics_words = [
-        [[z.lower() for z in y if z != "" and z.lower() not in stopwords_] for y in x if y != []] \
-        for x in df_sentiment_lyrics_words]
-    # freqs
-    word_dict = {z: [0] for x in df_sentiment_lyrics_words for y in x for z in y}
-    print("calculating words sentiment")
-    for x in tqdm(df_sentiment_lyrics_words):
-        for y in x:
-            for z in y:
-                word_dict[z][0] += 1
-                word_dict[z] = [word_dict[z][0], TextBlob(z).sentiment.polarity]
-    sents_dict = {y: [0] for x in df_sentiment_lyrics_sents for y in x}
-    print("calculating sentences sentiment")
-    for x in tqdm(df_sentiment_lyrics_sents):
-        for y in x:
-            splitted_sent = [x for x in re.sub("\W", " ", y).split(" ") if x != ""]
-            sentence_score = 0
-            for z in splitted_sent:
-                if z not in stopwords_:
-                    sentence_score += word_dict[z][0]
-            sents_dict[y] = [sentence_score, TextBlob(y).sentiment.polarity]
+    neutral_words= pd.Series([y for x in df["neutral words"] for y in str(x).split("###") if y!="nan"]).value_counts()
+    positive_words=pd.Series([y for x in df["positive words"] for y in str(x).split("###") if y!="nan"]).value_counts()
+    negative_words=pd.Series([y for x in df["negative words"] for y in str(x).split("###") if y!="nan"]).value_counts()
 
-    sorted_word_dict_keys=sorted(word_dict.items(), key=lambda l: l[1][0], reverse=True)
-    sorted_sents_dict_keys=sorted(sents_dict.items(), key=lambda l: l[1][0], reverse=True)
-            #
-    positive_words = {x[0]: x[1][0] for x in sorted_word_dict_keys if
-                      x[1][1] > 0}
-    negative_words = {x[0]: x[1][0] for x in sorted_word_dict_keys if
-                      x[1][1] < 0}
-    neutral_words = {x[0]: x[1][0] for x in sorted_word_dict_keys if
-                     x[1][1] == 0}
-    positive_sentences = {x[0]: x[1][0] for x in  sorted_sents_dict_keys
-                          if x[1][1] > 0}
-    negative_sentences = {x[0]: x[1][0] for x in  sorted_sents_dict_keys
-                          if x[1][1] < 0}
-    neutral_sentences = {x[0]: x[1][0] for x in  sorted_sents_dict_keys
-                         if x[1][1] == 0}
 
     return [[positive_words,negative_words, neutral_words], [positive_sentences, negative_sentences, neutral_sentences]]
 
 def create_neutral_word_cloud(df,filtered_data):
     data=filtered_data[0][2]
-    print("neutral words")
+    #print("neutral words")
     return create_word_cloud(data,"v","words")
 
 def create_positive_word_cloud(df,filtered_data):
     data=filtered_data[0][0]
-    print("positive words")
+    #print("positive words")
     return create_word_cloud(data,"h","words")
 
 def create_negative_word_cloud(df,filtered_data):
     data=filtered_data[0][1]
-    print("negative words")
+    #print("negative words")
     return create_word_cloud(data,"h","words")
 
 #
 def create_neutral_sent_cloud(df,filtered_data):
     data= filtered_data[1][2]
-    print("neutral sentences")
+    #print("neutral sentences")
     return create_word_cloud(data,"v", "sentences")
 
 def create_positive_sent_cloud(df,filtered_data):
     data= filtered_data[1][0]
-    print("positive sentences")
+    #print("positive sentences")
     return create_word_cloud(data,"h", "sentences")
 
 def create_negative_sent_cloud(df,filtered_data):
     data= filtered_data[1][1]
-    print("negative sentences")
+    #print("negative sentences")
     return create_word_cloud(data,"h", "sentences")
 
 
@@ -673,7 +637,7 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
     activity_f=list(activity_f)
     song_len_f=[song_len_f]
 
-    print(band_names_f)
+    #print(band_names_f)
     df_l_f=[]
     if band_names_f!=[]:
         for band_name in band_names_f:
@@ -683,7 +647,7 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
         df_l_f.append(df)
 
 
-    print("genre",genres_f)
+    #print("genre",genres_f)
     if  genres_f!=[]:
         if len(df_l_f)>0:
             for i,df_ in enumerate(df_l_f):
@@ -697,7 +661,7 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
                 df_temp=df[df["genres"].str.contains(genre)]
                 df_l_f.append(df_temp)
 
-    print("country",country_f)
+    #print("country",country_f)
     if  country_f!=[]:
         if len(df_l_f)>0:
             for i,df_ in enumerate(df_l_f):
@@ -720,7 +684,7 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
             df_temp= df_temp_[df_temp_[column_] > 0]
         elif filter=="negative":
             df_temp= df_temp_[df_temp_[column_] < 0]
-        print("CHECK",df_temp, filter_)
+        #print("CHECK",df_temp, filter_)
 
         return df_temp
 
@@ -778,14 +742,14 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
             temp_df=[]
             for i,df_ in enumerate(df_l_f):
                 df_filt=df_.drop_duplicates(subset=["band name"]).reset_index(drop=True)
-                print("FILT DF", df_filt)
+                #print("FILT DF", df_filt)
                 act_list = [[y.split("-") for y in x.split(";")] for x in df_filt["activity"]]
-                print("LIST", act_list)
+                #print("LIST", act_list)
                 act_starts = [[int(z[0]) for z in [y for y in x]] for x in act_list]
-                print("STARTS", act_starts)
+                #print("STARTS", act_starts)
                 act_ends = [[int(datetime.datetime.now().year) if len(z) == 1 else int(z[1]) for z in [y for y in x]] for x
                             in act_list]
-                print("ENDS", act_ends)
+                #print("ENDS", act_ends)
 
                 filt_names = []
                 for j, start in enumerate(act_starts):
@@ -793,19 +757,19 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
                         e = act_ends[j][j2]
                         if s >= activity_f[0] and e <= activity_f[1] and df_filt["band name"][j] not in filt_names:
                             filt_names.append(df_filt["band name"][j])
-                print("NAMES", filt_names)
+                #print("NAMES", filt_names)
 
                 temp_df= df_[df_["band name"].str.contains("|".join(filt_names))]
             df_l_f[i] = temp_df
         else:
             df_filt=df.drop_duplicates(subset=["band name"]).reset_index(drop=True)
-            print("FILT DF", df_filt)
+            #print("FILT DF", df_filt)
             act_list = [[y.split("-") for y in x.split(";")] for x in df_filt["activity"]]
-            print("LIST", act_list)
+            #print("LIST", act_list)
             act_starts = [[int(z[0]) for z in [y for y in x]] for x in act_list]
-            print("STARTS", act_starts)
+            #print("STARTS", act_starts)
             act_ends = [[int(datetime.datetime.now().year) if len(z)==1 else int(z[1]) for z in [y for y in x]] for x in act_list]
-            print("ENDS", act_ends)
+            #print("ENDS", act_ends)
 
             act_ends = [[y[1].strip() for y in x] for x in act_list]
 
@@ -815,7 +779,7 @@ def filter_data(df, band_names_f,genres_f, country_f, album_title_f, song_title_
                     e = act_ends[j][j2]
                     if s >= activity_f[0] and e <= activity_f[1] and df_filt["band name"][j] not in filt_names:
                         filt_names.append(df_filt["band name"][j])
-            print("NAMES", filt_names)
+            #print("NAMES", filt_names)
 
             temp_df = df[df["band name"].str.contains("|".join(filt_names))]
             df_l_f.append(temp_df)
@@ -875,6 +839,17 @@ for x,i in enumerate(songs_lens):
 #LAYOUT
 
 app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"white", "fontFamily":"Arial"},children=[
+dcc.ConfirmDialog(
+        id='confirm-dialog',
+        message='''\u26A0 IMPORTANT \u26A0\n
+         \u26A0 Any lag is due to the hosting service free tier (i.e. render.com)
+         \u26A0 ON START, first choose at least one filter, then press "Apply".\n
+         \u26A0 Clicking on other buttons first will make the app crash.\n
+         \u26A0 Applying without any filter is not recommended.\n
+         \u26A0 Press "Generate clouds" with extra care: slow function.\n
+         \u26A0 Save clouds with right click.\n
+         \u26A0 Save other plots through their upper bar.''' ,
+    ),
     html.H1("Music dashboard", style={"textAlign" : "center"}),
     html.Div(id="filters_metacont",
              style={"top":"0", "position":"sticky", "zIndex":"99999",
@@ -978,9 +953,10 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
     ,
 
     html.Button("Generate sentiment clouds", id="generate_clouds_btn",
-                style={"width":"75%", "marginLeft":"10%",
+                style={"width":"85%", "marginLeft":"5%",
                        "backgroundColor":"rgba(0,122,204,1)", "color":"white",
-                       "textAlign":"center","padding":"0.3%"}, n_clicks=0 ),
+                       "textAlign":"center","padding":"0.3%",
+                       "marginBottom":"1vh"}, n_clicks=0 ),
 
     dcc.Loading(
         id="loading-input_gencloud", style={"zIndex":"11000"},
@@ -1039,7 +1015,7 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                ]),
 
                html.Div(id="map_cont", style={"width":"100%","height":"100%"},children=[
-                    dcc.Graph(id="chor_g",figure={})
+                    dcc.Graph(id="chor_g",figure=px.histogram(x=[],template="plotly_dark"))
                ]),
            ]),
 
@@ -1067,7 +1043,7 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                         dcc.Graph(id="gnatt_marginal_x",  figure={}),
 
                     ]),
-                    dcc.Graph(id="gnatt_g", figure={}),
+                    dcc.Graph(id="gnatt_g", figure=px.histogram(x=[],template="plotly_dark")),
                 ]),
                 dcc.Loading(
                     id="loading-input_metacont", style={"zIndex":"11000"},
@@ -1082,7 +1058,7 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                     type="default",
                 ),
                 html.Div(id="heats_cont", style={"width": "50%", "float":"bottom"}, children=[
-                    dcc.Graph(id="heats_g", figure={}),
+                    dcc.Graph(id="heats_g", figure=px.histogram(x=[],template="plotly_dark")),
                     html.Div(id="marginal_y_cont", hidden=True, children=[
                         dcc.Graph(id="gnatt_marginal_y", figure={}),
                     ]),
@@ -1165,10 +1141,13 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
 #Input(component_id="generate_clouds_btn", component_property="n_clicks"),
 """
 
+
+
+
 @app.callback([
 
                #start_btn
-               Output(component_id="start_btn", component_property="style"),
+               Output(component_id="confirm-dialog", component_property="displayed"),
                #Output(component_id="loading-output_start", component_property="children")
                #Output(component_id="", component_property="")
 
@@ -1186,7 +1165,9 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                Input(component_id="album_year_slctr", component_property="value"),
                Input(component_id="activity_slctr", component_property="value"),
                Input(component_id="song_len_slctr", component_property="value"),
-               #Input(component_id="loading-output_start", component_property="children"),
+               Input(component_id="confirm-dialog", component_property="submit_n_clicks"),
+
+                  #Input(component_id="loading-output_start", component_property="children"),
 
                #MAP
                #GNATT
@@ -1194,14 +1175,20 @@ app.layout = html.Div(style={"backgroundColor":"rgba(17,17,17,1)", "color":"whit
                #HEATS
 
                ],
-              prevent_initial_call=True)
+              ) #prevent_initial_call=True
 def update_filters(band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f, album_year_f,activity_f, song_len_f,
-                   ): #  n_click_clouds
+                   n_click_start): #  n_click_clouds
 
     global filtered_df
     filtered_df = filter_data(df, band_names_f, genre_slctr_f, country_f, album_title_f, song_title_f, song_lyric_f,
                             album_year_f,activity_f, song_len_f)
-    return [{"visibility":"visible", "backgroundColor":"rgba(255,0,0,0.7)", "color":"white", "fontSize":"20px"}] #dummy output
+    if type(n_click_start)!=int:
+        n_click_start=0
+
+    if n_click_start==0:
+        return [True]
+    elif n_click_start>0:
+        return [False]
 
 
 @app.callback(
@@ -1275,7 +1262,7 @@ def draw_general_plots(metacont_loading_val,n_clicks_start, loading_start, loadi
                     *map_data, *gnatt_data, *heats_data, *marginals_data, *singleplots_data,
                    start_btn_style, loading_start,
                  ]
-    print(final_data)
+    #(final_data)
     return final_data
 
 
